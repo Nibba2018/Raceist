@@ -13,11 +13,11 @@ int D3 = 9;
 int D4 = 10;
 int D5 = 11;
 int D6 = 12;
-//int D7 = 13;
-float kp=0.9;
-float kd=33;
+float kp=1.4;
+float kd=0.32;
 int lerror=0;
 int error=0;
+int RS,LS;
 void setup()                    // run once, when the sketch starts
 {
  Serial.begin(9600);            // set the baud rate to 9600, same should be of your Serial Monitor
@@ -34,8 +34,11 @@ void setup()                    // run once, when the sketch starts
  pinMode(D4, INPUT);
  pinMode(D5, INPUT);
  pinMode(D6, INPUT);
- //pinMode(D7, INPUT); 
-
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in4, HIGH);
+  digitalWrite(in3, LOW); 
+ delay(1000);
 }
 
 
@@ -49,30 +52,58 @@ void loop()
   int detect5 = digitalRead(D5);
   int detect6 = digitalRead(D6);
   //int detect7 = digitalRead(D7);
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW);
+ 
   int pos=0;
-  
-  if(detect1 != 0 || detect2 != 0 || detect3 != 0 || detect4 != 0 || detect5 != 0 || detect6 != 0)
+  detect1=1-detect1;
+  detect2=1-detect2;
+  detect3=1-detect3;
+  detect4=1-detect4;
+  detect5=1-detect5;
+  detect6=1-detect6;
+  if(!(detect1 == 0 && detect2 == 0 && detect3 == 0 && detect4 == 0 && detect5 == 0 && detect6 == 0))
   {
-    pos=(0*detect1+1000*detect2+2000*detect3+3000*detect4+4000*detect5+5000*detect6)/(detect1+detect2+detect3+detect4+detect5+detect6);
-  }
-  if(detect1 == 1 && detect2 == 1 && detect3 == 1 && detect4 == 1 && detect5 == 1 && detect6 == 1)
-    pos=0;
-  error=pos-2500;
+    Serial.print("If");
+    pos=(0*detect1+100*detect2+200*detect3+300*detect4+400*detect5+500*detect6)/(detect1+detect2+detect3+detect4+detect5+detect6);
+  error=pos-250;
   float change= kp* error - kd*(error-lerror);
   lerror=error;
-  int RS=255 - (int)change;
-  int LS=255 + (int)change;
-
+   RS=255 + (int)change;
+   LS=255 - (int)change;
+ Serial.println(error);
   if(RS>255) RS=255;
   if(LS>255) LS=255;
   if(RS<0) RS=0;
   if(LS<0) LS=0;
-  LS*=0.6;
-  RS*=0.6;
+   LS*=0.4;
+   RS*=0.4;
+   
+   RS*=0.6;
   analogWrite(enA, RS);
   analogWrite(enB, LS);
+  }
+  else 
+  {
+    float change;
+  if(lerror>0)
+    {
+     change=255;
+      }
+  else
+    {
+    change=-255;
+      }
+    RS=255 + (int)change;
+   LS=255 - (int)change;
+ Serial.println(error);
+  if(RS>255) RS=255;
+  if(LS>255) LS=255;
+  if(RS<0) RS=0;
+  if(LS<0) LS=0;
+   LS*=0.4;
+   RS*=0.4;
+   
+   RS*=0.6;
+  analogWrite(enA, RS);
+  analogWrite(enB, LS);
+  }
 }
